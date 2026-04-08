@@ -669,7 +669,7 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
     gap: 16px;
-    max-width: 920px;
+    max-width: 1160px;
     margin: 0 auto;
   }
 
@@ -1154,49 +1154,64 @@
   <h2>Simple y <em>predecible</em></h2>
   <p class="section-sub reveal">Un precio fijo por edificio. Sin sorpresas ni comisiones ocultas.</p>
   <div class="pricing-grid">
+
     <div class="price-card reveal">
-      <div class="price-plan">Starter</div>
-      <div class="price-amount"><sup>USD</sup>29<span>/mes</span></div>
-      <div class="price-units">Hasta 30 unidades</div>
+      <div class="price-plan">Gratis</div>
+      <div class="price-amount" style="font-size:52px;">$0<span>/mes</span></div>
+      <div class="price-units">1 edificio · hasta 15 unidades</div>
       <ul class="price-feats">
-        <li>Expensas digitales</li>
-        <li>Pago con MercadoPago</li>
-        <li>Reclamos y mantenimiento</li>
+        <li>Expensas básicas (sin cobro online)</li>
         <li>Avisos y notificaciones</li>
+        <li>Reclamos básicos</li>
+        <li>Perfil de vecino</li>
+      </ul>
+      <button class="btn-plan-outline" onclick="scrollToForm()">Empezar gratis →</button>
+    </div>
+
+    <div class="price-card reveal" style="transition-delay:.1s;">
+      <div class="price-plan">Básico</div>
+      <div class="price-amount"><sup>USD</sup>19<span>/mes</span></div>
+      <div class="price-units">Hasta 40 unidades</div>
+      <ul class="price-feats">
+        <li>Expensas + cobro con MercadoPago</li>
+        <li>Chat vecinal</li>
+        <li>Reclamos con seguimiento</li>
+        <li>Documentos y reglamento</li>
         <li>Soporte por email</li>
       </ul>
-      <button class="btn-plan-outline" onclick="scrollToForm()">Empezar gratis →</button>
+      <button class="btn-plan-outline" onclick="scrollToForm()">Solicitar demo →</button>
     </div>
-    <div class="price-card featured reveal" style="transition-delay:.1s;">
+
+    <div class="price-card featured reveal" style="transition-delay:.2s;">
       <div class="featured-badge">Más popular ⭐</div>
-      <div class="price-plan">Growth</div>
-      <div class="price-amount"><sup>USD</sup>59<span>/mes</span></div>
+      <div class="price-plan">Pro</div>
+      <div class="price-amount"><sup>USD</sup>39<span>/mes</span></div>
       <div class="price-units">Hasta 100 unidades</div>
       <ul class="price-feats">
-        <li>Todo lo de Starter</li>
-        <li>Chat vecinal</li>
+        <li>Todo lo de Básico</li>
+        <li>Asistente IA 🤖 24/7</li>
         <li>Control de visitas con QR</li>
-        <li>Marketplace vecinal</li>
+        <li>Directorio de proveedores</li>
         <li>Calendario de eventos</li>
-        <li>Asistente con IA 🤖</li>
         <li>Soporte prioritario</li>
       </ul>
-      <button class="btn-plan-filled" onclick="scrollToForm()">Empezar gratis →</button>
+      <button class="btn-plan-filled" onclick="scrollToForm()">Solicitar demo →</button>
     </div>
-    <div class="price-card reveal" style="transition-delay:.2s;">
-      <div class="price-plan">Pro</div>
-      <div class="price-amount"><sup>USD</sup>99<span>/mes</span></div>
-      <div class="price-units">Unidades ilimitadas</div>
+
+    <div class="price-card reveal" style="transition-delay:.3s;">
+      <div class="price-plan">Admin</div>
+      <div class="price-amount"><sup>USD</sup>79<span>/mes</span></div>
+      <div class="price-units">Edificios ilimitados</div>
       <ul class="price-feats">
-        <li>Todo lo de Growth</li>
-        <li>Cámaras en vivo 📹</li>
-        <li>Multi-edificio en un panel</li>
-        <li>Marca personalizada</li>
+        <li>Todo lo de Pro</li>
+        <li>Dashboard multi-edificio</li>
         <li>Analytics avanzado</li>
-        <li>Soporte por WhatsApp</li>
+        <li>Marca personalizada</li>
+        <li>Soporte por WhatsApp directo</li>
       </ul>
-      <button class="btn-plan-outline" onclick="scrollToForm()">Empezar gratis →</button>
+      <button class="btn-plan-outline" onclick="scrollToForm()">Solicitar demo →</button>
     </div>
+
   </div>
   <p style="text-align:center;margin-top:28px;font-size:14px;color:var(--t3);font-family:var(--display);font-weight:600;">Todos los planes incluyen <span style="color:var(--teal);">3 meses de piloto gratuito</span> · Sin tarjeta de crédito</p>
 </section>
