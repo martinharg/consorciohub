@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Balance — ConsorcioHub</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body { font-family: 'Inter', sans-serif; background: #0a0812; overflow: hidden; }
+:root {
+  --bg:#0d0b16; --bg2:#15131f; --bg3:#1d1b2c; --bg4:#2a2740;
+  --sidebar:#0a0812; --card:#15131f;
+  --line:rgba(255,255,255,0.07); --line2:rgba(255,255,255,0.13);
+  --txt:#f0eeff; --txt2:rgba(240,238,255,0.6); --txt3:rgba(240,238,255,0.32);
+  --violet:#7c5cff; --active-bg:#211e36;
+  --green:#2fbd80; --red:#ef5d7d; --amber:#eaa53a; --teal:#38bcd8;
+}
+::-webkit-scrollbar { width:8px; height:8px; } ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius:4px; }
+::-webkit-scrollbar-track { background: transparent; }
+* { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.12) transparent; }
+input, select { font-family:'Inter',sans-serif; }
+@keyframes growBar { from{transform:scaleY(0)} to{transform:scaleY(1)} }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<template id="__bundler_thumbnail">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#0d0b16"/><rect x="20" y="56" width="11" height="24" rx="2" fill="#2fbd80"/><rect x="34" y="44" width="11" height="36" rx="2" fill="#ef5d7d"/><rect x="55" y="38" width="11" height="42" rx="2" fill="#2fbd80"/><rect x="69" y="50" width="11" height="30" rx="2" fill="#ef5d7d"/><rect x="20" y="24" width="40" height="6" rx="3" fill="#7c5cff"/></svg>
+</template>
+
+<script type="text/babel">
+const { useState, useMemo, useRef } = React;
+const F = 'Inter, sans-serif';
+const C = {
+  bg:'var(--bg)',bg2:'var(--bg2)',bg3:'var(--bg3)',bg4:'var(--bg4)',sidebar:'var(--sidebar)',card:'var(--card)',
+  line:'var(--line)',line2:'var(--line2)',txt:'var(--txt)',txt2:'var(--txt2)',txt3:'var(--txt3)',
+  violet:'var(--violet)',activeBg:'var(--active-bg)',green:'var(--green)',red:'var(--red)',amber:'var(--amber)',teal:'var(--teal)',
+};
+const money = n => '$ '+Number(n||0).toLocaleString('es-AR');
+const signed = n => (n>=0?'+ ':'− ')+'$ '+Math.abs(n).toLocaleString('es-AR');
+
+const Icon = ({ d, size=18, color='currentColor', sw=1.8, fill='none', style={} }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke={color} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round" style={style}>
+    {Array.isArray(d)?d.map((p,i)=><path key={i} d={p}/>):<path d={d}/>}
+  </svg>
+);
+const I = {
+  grid:"M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z",
+  chat:"M21 11.5a8.5 8.5 0 01-12.5 7.5L3 21l1.9-5.5A8.5 8.5 0 1121 11.5z",
+  megaphone:"M3 11l15-6v14L3 13v-2zM3 11v2a2 2 0 002 2h1v3a1 1 0 001 1h1a1 1 0 001-1v-3M18 8a3 3 0 010 6",
+  coins:"M12 7.5c4.4 0 8-1.1 8-2.5S16.4 2.5 12 2.5 4 3.6 4 5s3.6 2.5 8 2.5zM4 5v6.5c0 1.4 3.6 2.5 8 2.5s8-1.1 8-2.5V5M4 11.5V18c0 1.4 3.6 2.5 8 2.5s8-1.1 8-2.5v-6.5",
+  receipt:"M5 21V4a1 1 0 011-1l2 1.5L10 3l2 1.5L14 3l2 1.5L18 3a1 1 0 011 1v17l-2.5-1.5L14 21l-2-1.5L10 21l-2.5-1.5zM9 8h6M9 12h6",
+  trending:"M23 6l-9.5 9.5-5-5L1 18M17 6h6v6",
+  trendingDown:"M23 18l-9.5-9.5-5 5L1 6M17 18h6v-6",
+  users:"M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.9M16 3.1a4 4 0 010 7.8",
+  wrench:"M14.7 6.3a4 4 0 00-5.2 5.2L3 18l3 3 6.5-6.5a4 4 0 005.2-5.2l-2.7 2.7-2.5-2.5 2.7-2.7z",
+  file:"M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zM14 2v6h6M9 13h6M9 17h6",
+  pkg:"M21 8l-9-5-9 5 9 5 9-5zM3 8v8l9 5 9-5V8M12 13v8",
+  truck:"M1 3h13v10H1zM14 8h4l3 3v2h-7M5.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM17.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z",
+  back:"M19 12H5M12 19l-7-7 7-7",
+  chev:"M6 9l6 6 6-6",
+  download:"M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3",
+  logout:"M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9",
+  scale:"M12 3v18M5 7l-3 6a3 3 0 006 0L5 7zM19 7l-3 6a3 3 0 006 0l-3-6zM5 7h14M8 21h8",
+  wallet:"M19 7H5a2 2 0 00-2 2v8a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2zM16 13h.01M3 9V7a2 2 0 012-2h11",
+  arrow:"M5 12h14M13 6l6 6-6 6",
+  user:"M20 21a8 8 0 10-16 0M12 11a4 4 0 100-8 4 4 0 000 8z",
+  bolt:"M13 2L3 14h7l-1 8 10-12h-7l1-8z",
+  shield:"M12 2l8 3v6c0 5-3.5 8-8 11-4.5-3-8-6-8-11V5l8-3z",
+};
+
+const NAV = [
+  { head:'PRINCIPAL', items:[ {label:'Dashboard',icon:'grid'}, {label:'Comunidad',icon:'chat'} ]},
+  { head:'GESTIÓN', items:[ {label:'Avisos',icon:'megaphone'}, {label:'Expensas',icon:'coins'}, {label:'Gastos',icon:'receipt'}, {label:'Balance',icon:'trending'}, {label:'Vecinos',icon:'users'}, {label:'Reclamos',icon:'wrench'}, {label:'Documentos',icon:'file'}, {label:'Paquetes',icon:'pkg'}, {label:'Proveedores',icon:'truck'} ]},
+];
+const Sidebar = ({ active='Balance' }) => (
+  <div style={{ position:'relative',width:182,background:C.sidebar,height:'100%',display:'flex',flexDirection:'column',padding:'16px 0 12px',flexShrink:0,overflow:'hidden' }}>
+    <div style={{ position:'absolute',left:0,top:0,bottom:0,width:3,background:'linear-gradient(180deg,#7fecff 0%,#3fcdf2 45%,#23a3da 100%)',boxShadow:'0 0 12px 2px rgba(64,205,242,0.6), 0 0 34px 8px rgba(64,205,242,0.28)',zIndex:2 }}/>
+    <div style={{ padding:'0 18px 16px' }}>
+      <div style={{ fontSize:15,fontWeight:700,color:C.txt,letterSpacing:-0.3 }}>Consorcio<span style={{ color:C.violet }}>Hub</span></div>
+      <div style={{ fontSize:9.5,color:C.txt3,marginTop:3 }}>Edificio San Martín</div>
+    </div>
+    <div style={{ flex:1,overflowY:'auto',display:'flex',flexDirection:'column',gap:4 }}>
+      {NAV.map(g=>(
+        <div key={g.head}>
+          <div style={{ fontSize:8.5,fontWeight:700,color:C.txt3,letterSpacing:0.7,padding:'8px 20px 6px' }}>{g.head}</div>
+          <div style={{ display:'flex',flexDirection:'column',gap:2,padding:'0 9px' }}>
+            {g.items.map(n=>{ const on=n.label===active; return (
+              <div key={n.label} style={{ display:'flex',alignItems:'center',gap:11,padding:'8px 10px',borderRadius:8,background:on?C.activeBg:'transparent',cursor:'pointer',transition:'background .12s' }}
+                onMouseEnter={e=>{if(!on)e.currentTarget.style.background='rgba(255,255,255,0.04)';}} onMouseLeave={e=>{if(!on)e.currentTarget.style.background='transparent';}}>
+                <span style={{ color:on?C.violet:C.txt3,display:'flex',flexShrink:0 }}><Icon d={I[n.icon]} size={17}/></span>
+                <span style={{ fontSize:12.5,color:on?C.txt:C.txt2,fontWeight:on?600:500,whiteSpace:'nowrap' }}>{n.label}</span>
+              </div>);})}
+          </div>
+        </div>
+      ))}
+    </div>
+    <div style={{ padding:'10px 12px 0' }}>
+      <div style={{ display:'flex',alignItems:'center',gap:9,padding:'8px 10px',background:C.bg2,borderRadius:10,border:`1px solid ${C.line}` }}>
+        <div style={{ width:28,height:28,borderRadius:'50%',background:'linear-gradient(135deg,#7c5cff,#a279f0)',flexShrink:0 }}/>
+        <div style={{ minWidth:0,flex:1 }}>
+          <div style={{ fontSize:11.5,fontWeight:600,color:C.txt }}>Martín H.</div>
+          <div style={{ fontSize:9,color:C.txt3 }}>Administrador</div>
+        </div>
+        <span style={{ color:C.txt3,display:'flex',cursor:'pointer' }}><Icon d={I.logout} size={15}/></span>
+      </div>
+    </div>
+  </div>
+);
+
+const Topbar = () => (
+  <div style={{ height:54,borderBottom:`1px solid ${C.line}`,display:'flex',alignItems:'center',padding:'0 18px',flexShrink:0,position:'relative',background:C.bg }}>
+    <button style={{ width:34,height:34,borderRadius:'50%',background:C.bg3,border:`1px solid ${C.line2}`,display:'flex',alignItems:'center',justifyContent:'center',color:C.txt2,cursor:'pointer' }}><Icon d={I.back} size={17}/></button>
+    <div style={{ position:'absolute',left:0,right:0,display:'flex',alignItems:'center',justifyContent:'center',gap:9,pointerEvents:'none' }}>
+      <span style={{ color:C.violet,display:'flex' }}><Icon d={I.trending} size={18}/></span>
+      <span style={{ fontSize:16,fontWeight:700,color:C.txt }}>Balance</span>
+    </div>
+  </div>
+);
+
+const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const Drop = ({ value, options, onChange, width }) => {
+  const [open,setOpen] = useState(false);
+  const ref = useRef(null);
+  React.useEffect(()=>{ const h=e=>{ if(ref.current && !ref.current.contains(e.target)) setOpen(false); }; document.addEventListener('mousedown',h); return ()=>document.removeEventListener('mousedown',h); },[]);
+  return (
+    <div ref={ref} style={{ position:'relative',width:width||'100%' }}>
+      <button onClick={()=>setOpen(o=>!o)} style={{ width:'100%',display:'flex',alignItems:'center',justifyContent:'space-between',gap:10,padding:'11px 14px',background:C.bg2,border:`1px solid ${open?C.violet:C.line2}`,borderRadius:9,cursor:'pointer',transition:'border .12s' }}>
+        <span style={{ fontSize:13.5,fontWeight:600,color:C.violet }}>{value}</span>
+        <span style={{ color:C.txt3,display:'flex' }}><Icon d={I.chev} size={15}/></span>
+      </button>
+      {open && (
+        <div style={{ position:'absolute',top:'calc(100% + 6px)',left:0,right:0,background:'#1c1a2e',border:`1px solid ${C.line2}`,borderRadius:9,padding:5,zIndex:50,boxShadow:'0 14px 40px rgba(0,0,0,0.55)',maxHeight:260,overflowY:'auto' }}>
+          {options.map(o=>(
+            <div key={o} onClick={()=>{ onChange(o); setOpen(false); }} style={{ padding:'8px 11px',borderRadius:6,fontSize:13,color:o===value?C.txt:C.txt2,background:o===value?C.activeBg:'transparent',fontWeight:o===value?600:500,cursor:'pointer' }}
+              onMouseEnter={e=>{if(o!==value)e.currentTarget.style.background='rgba(255,255,255,0.04)';}} onMouseLeave={e=>{if(o!==value)e.currentTarget.style.background='transparent';}}>{o}</div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* ---- data ---- */
+const SALDO_ANT = 1356300;
+const INGRESOS = [
+  { label:'Expensas cobradas', sub:'39 de 48 unidades', amt:4515600, icon:'coins', color:C.green },
+  { label:'Intereses por mora', sub:'9 unidades con deuda', amt:38200, icon:'trending', color:C.green },
+  { label:'Uso del SUM y amenities', sub:'3 reservas facturadas', amt:8900, icon:'users', color:C.green },
+];
+const EGRESOS = [
+  { label:'Remuneraciones y cargas sociales', sub:'Sueldo, SUTERH, AFIP', amt:2146520, icon:'user', color:C.violet },
+  { label:'Suministros, servicios y seguros', sub:'Edenor, AySA, ascensores, seguro', amt:889550, icon:'bolt', color:C.teal },
+  { label:'Mantenimiento y reparaciones', sub:'Bomba, portón, limpieza', amt:516850, icon:'wrench', color:C.amber },
+  { label:'Gastos administrativos', sub:'Honorarios y bancarios', amt:476480, icon:'file', color:C.red },
+];
+const TREND = [
+  { m:'Ene', in:4180000, eg:3720000 },
+  { m:'Feb', in:4310000, eg:3980000 },
+  { m:'Mar', in:4090000, eg:4210000 },
+  { m:'Abr', in:4470000, eg:3890000 },
+  { m:'May', in:4520000, eg:4150000 },
+  { m:'Jun', in:4562700, eg:4029400 },
+];
+
+const KCard = ({ icon, color, label, value, sub }) => (
+  <div style={{ flex:1,background:C.card,border:`1px solid ${C.line}`,borderRadius:14,padding:'16px 17px' }}>
+    <div style={{ display:'flex',alignItems:'center',gap:9,marginBottom:13 }}>
+      <div style={{ width:32,height:32,borderRadius:9,background:color+'22',display:'flex',alignItems:'center',justifyContent:'center',color }}><Icon d={I[icon]} size={17}/></div>
+      <span style={{ fontSize:12.5,fontWeight:600,color:C.txt2 }}>{label}</span>
+    </div>
+    <div style={{ fontSize:25,fontWeight:800,color:C.txt,letterSpacing:-0.8 }}>{value}</div>
+    <div style={{ fontSize:11.5,color:C.txt3,marginTop:4 }}>{sub}</div>
+  </div>
+);
+
+const LineItem = ({ it, sign, last }) => (
+  <div style={{ display:'flex',alignItems:'center',gap:13,padding:'13px 16px',borderBottom:last?'none':`1px solid ${C.line}` }}>
+    <div style={{ width:36,height:36,borderRadius:10,flexShrink:0,background:it.color+'1c',border:`1px solid ${it.color}33`,display:'flex',alignItems:'center',justifyContent:'center',color:it.color }}><Icon d={I[it.icon]} size={17}/></div>
+    <div style={{ flex:1,minWidth:0 }}>
+      <div style={{ fontSize:13.5,fontWeight:600,color:C.txt }}>{it.label}</div>
+      <div style={{ fontSize:11.5,color:C.txt3,marginTop:1 }}>{it.sub}</div>
+    </div>
+    <div style={{ fontSize:14,fontWeight:700,color:sign>0?C.green:C.txt }}>{sign>0?'+ ':'− '}{money(it.amt).replace('$ ','$')}</div>
+  </div>
+);
+
+function App(){
+  const [month,setMonth] = useState('Junio');
+  const [year,setYear] = useState('2026');
+  const totalIn = useMemo(()=>INGRESOS.reduce((s,x)=>s+x.amt,0),[]);
+  const totalEg = useMemo(()=>EGRESOS.reduce((s,x)=>s+x.amt,0),[]);
+  const resultado = totalIn - totalEg;
+  const saldoFinal = SALDO_ANT + resultado;
+  const maxBar = Math.max(...TREND.flatMap(t=>[t.in,t.eg]));
+
+  return (
+    <div style={{ height:'100vh',background:C.bg,color:C.txt,display:'flex',overflow:'hidden',fontFamily:F }}>
+      <Sidebar active="Balance"/>
+      <div style={{ flex:1,display:'flex',flexDirection:'column',minWidth:0 }}>
+        <Topbar/>
+        <div style={{ flex:1,overflowY:'auto',padding:'18px 22px 40px' }}>
+
+          {/* period selectors */}
+          <div style={{ display:'flex',gap:12,marginBottom:18 }}>
+            <div style={{ flex:1 }}><Drop value={month} options={MONTHS} onChange={setMonth}/></div>
+            <Drop value={year} options={['2024','2025','2026','2027']} onChange={setYear} width={120}/>
+          </div>
+
+          {/* KPI cards */}
+          <div style={{ display:'flex',gap:14,marginBottom:16 }}>
+            <KCard icon="trending" color={C.green} label="Ingresos del mes" value={money(totalIn)} sub="Expensas, intereses y amenities"/>
+            <KCard icon="trendingDown" color={C.red} label="Egresos del mes" value={money(totalEg)} sub="4 rubros liquidados"/>
+            <KCard icon="scale" color={resultado>=0?C.violet:C.red} label="Resultado del período" value={signed(resultado)} sub={resultado>=0?'Superávit del mes':'Déficit del mes'}/>
+          </div>
+
+          {/* saldo flow + reserva */}
+          <div style={{ display:'flex',gap:14,marginBottom:24 }}>
+            <div style={{ flex:2,background:C.card,border:`1px solid ${C.line}`,borderRadius:14,padding:'16px 20px',display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:12 }}>
+              {[['Saldo anterior',money(SALDO_ANT),C.txt],['+ Ingresos',money(totalIn),C.green],['− Egresos',money(totalEg),C.red],['= Saldo final',money(saldoFinal),C.violet]].map(([l,v,col],i)=>(
+                <React.Fragment key={l}>
+                  {i>0 && <span style={{ color:C.txt3,display:'flex' }}><Icon d={I.arrow} size={16}/></span>}
+                  <div>
+                    <div style={{ fontSize:11,color:C.txt3,fontWeight:600,marginBottom:4 }}>{l}</div>
+                    <div style={{ fontSize:16,fontWeight:800,color:col,letterSpacing:-0.4 }}>{v}</div>
+                  </div>
+                </React.Fragment>
+              ))}
+            </div>
+            <div style={{ flex:1,background:C.card,border:`1px solid ${C.line}`,borderRadius:14,padding:'16px 18px',display:'flex',alignItems:'center',gap:13 }}>
+              <div style={{ width:40,height:40,borderRadius:11,background:C.teal+'22',display:'flex',alignItems:'center',justifyContent:'center',color:C.teal,flexShrink:0 }}><Icon d={I.shield} size={20}/></div>
+              <div><div style={{ fontSize:11.5,color:C.txt3,fontWeight:600 }}>Fondo de reserva</div><div style={{ fontSize:18,fontWeight:800,color:C.txt,letterSpacing:-0.4,marginTop:3 }}>{money(1842500)}</div></div>
+            </div>
+          </div>
+
+          {/* two columns: ingresos / egresos */}
+          <div style={{ display:'flex',gap:14,marginBottom:24,alignItems:'flex-start' }}>
+            <div style={{ flex:1 }}>
+              <div style={{ display:'flex',alignItems:'center',gap:8,margin:'0 2px 10px' }}>
+                <span style={{ width:9,height:9,borderRadius:'50%',background:C.green }}/>
+                <span style={{ fontSize:14.5,fontWeight:700,color:C.txt }}>Ingresos</span>
+                <span style={{ marginLeft:'auto',fontSize:13,fontWeight:700,color:C.green }}>{money(totalIn)}</span>
+              </div>
+              <div style={{ background:C.card,border:`1px solid ${C.line}`,borderRadius:14,overflow:'hidden' }}>
+                {INGRESOS.map((it,i)=><LineItem key={i} it={it} sign={1} last={i===INGRESOS.length-1}/>)}
+              </div>
+            </div>
+            <div style={{ flex:1 }}>
+              <div style={{ display:'flex',alignItems:'center',gap:8,margin:'0 2px 10px' }}>
+                <span style={{ width:9,height:9,borderRadius:'50%',background:C.red }}/>
+                <span style={{ fontSize:14.5,fontWeight:700,color:C.txt }}>Egresos</span>
+                <span style={{ marginLeft:'auto',fontSize:13,fontWeight:700,color:C.txt }}>{money(totalEg)}</span>
+              </div>
+              <div style={{ background:C.card,border:`1px solid ${C.line}`,borderRadius:14,overflow:'hidden' }}>
+                {EGRESOS.map((it,i)=><LineItem key={i} it={it} sign={-1} last={i===EGRESOS.length-1}/>)}
+              </div>
+            </div>
+          </div>
+
+          {/* trend chart */}
+          <div style={{ display:'flex',alignItems:'center',gap:8,margin:'0 2px 12px' }}>
+            <span style={{ fontSize:14.5,fontWeight:700,color:C.txt }}>Ingresos vs. egresos</span>
+            <span style={{ fontSize:12,color:C.txt3,marginLeft:6 }}>últimos 6 meses</span>
+            <span style={{ marginLeft:'auto',display:'flex',gap:14 }}>
+              <span style={{ display:'flex',alignItems:'center',gap:6,fontSize:11.5,color:C.txt2 }}><span style={{ width:9,height:9,borderRadius:2,background:C.green }}/>Ingresos</span>
+              <span style={{ display:'flex',alignItems:'center',gap:6,fontSize:11.5,color:C.txt2 }}><span style={{ width:9,height:9,borderRadius:2,background:C.red }}/>Egresos</span>
+            </span>
+          </div>
+          <div style={{ background:C.card,border:`1px solid ${C.line}`,borderRadius:14,padding:'20px 22px 16px' }}>
+            <div style={{ display:'flex',alignItems:'flex-end',gap:18,height:170 }}>
+              {TREND.map(t=>(
+                <div key={t.m} style={{ flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:9,height:'100%',justifyContent:'flex-end' }}>
+                  <div style={{ display:'flex',alignItems:'flex-end',gap:6,height:'100%',width:'100%',justifyContent:'center' }}>
+                    <div title={'Ingresos '+money(t.in)} style={{ width:'34%',maxWidth:26,height:`${t.in/maxBar*100}%`,background:`linear-gradient(180deg,${C.green},#1f9c66)`,borderRadius:'5px 5px 0 0',transformOrigin:'bottom',animation:'growBar .5s ease' }}/>
+                    <div title={'Egresos '+money(t.eg)} style={{ width:'34%',maxWidth:26,height:`${t.eg/maxBar*100}%`,background:`linear-gradient(180deg,${C.red},#c4445f)`,borderRadius:'5px 5px 0 0',transformOrigin:'bottom',animation:'growBar .5s ease' }}/>
+                  </div>
+                  <span style={{ fontSize:11,color:t.m==='Jun'?C.txt:C.txt3,fontWeight:t.m==='Jun'?700:500 }}>{t.m}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* actions */}
+          <div style={{ display:'flex',justifyContent:'flex-end',gap:10,marginTop:18 }}>
+            <button style={{ display:'flex',alignItems:'center',gap:8,padding:'10px 16px',background:C.bg2,border:`1px solid ${C.line2}`,borderRadius:9,color:C.txt,fontFamily:F,fontSize:13,fontWeight:600,cursor:'pointer' }}><Icon d={I.download} size={16}/>Exportar balance</button>
+            <button style={{ display:'flex',alignItems:'center',gap:8,padding:'10px 18px',background:C.violet,border:'none',borderRadius:9,color:'#fff',fontFamily:F,fontSize:13,fontWeight:600,cursor:'pointer',boxShadow:'0 6px 20px rgba(124,92,255,0.4)' }}><Icon d={I.file} size={16}/>Publicar a vecinos</button>
+          </div>
+
+        </div>
+      </div>
+      <Tweaks/>
+    </div>
+  );
+}
+
+function Tweaks(){
+  const [avail,setAvail] = useState(false);
+  React.useEffect(()=>{
+    const on=()=>setAvail(true), off=()=>setAvail(false);
+    window.addEventListener('__activate_edit_mode',on);
+    window.addEventListener('__deactivate_edit_mode',off);
+    window.parent && window.parent.postMessage({type:'__edit_mode_available'},'*');
+    return ()=>{ window.removeEventListener('__activate_edit_mode',on); window.removeEventListener('__deactivate_edit_mode',off); };
+  },[]);
+  if(!avail) return null;
+  return (
+    <div style={{ position:'fixed',bottom:18,right:18,zIndex:9999 }}>
+      <div style={{ width:248,background:'#1c1a2e',border:`1px solid ${C.line2}`,borderRadius:12,padding:'16px 18px',boxShadow:'0 12px 40px rgba(0,0,0,0.5)' }}>
+        <div style={{ fontSize:13,fontWeight:700,marginBottom:10,color:C.txt }}>Tweaks</div>
+        <div style={{ fontSize:12,color:C.txt2,lineHeight:1.5 }}>El balance se arma a partir de Expensas (ingresos) y Gastos (egresos) del período seleccionado.</div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
