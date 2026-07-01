@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Notificaciones — Mobile — NexoHub</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body { font-family: 'Inter', sans-serif; background: #0b0a14; overflow: hidden; }
+#stage { width:100vw; height:100vh; display:flex; align-items:center; justify-content:center; }
+.notif-scroll::-webkit-scrollbar{ width:0; }
+@keyframes nIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<template id="__bundler_thumbnail">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#181626"/><path d="M50 22a13 13 0 00-13 13c0 15-6 19-6 19h38s-6-4-6-19a13 13 0 00-13-13z" fill="none" stroke="#7c5cff" stroke-width="4" stroke-linejoin="round"/><path d="M44 60a6 6 0 0012 0" fill="none" stroke="#7c5cff" stroke-width="4"/><circle cx="66" cy="30" r="9" fill="#e85cff"/></svg>
+</template>
+
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel">
+const { useState } = React;
+const F='Inter, sans-serif';
+/* paleta de la app, con acento VIOLETA (migrado del azul) */
+const N={ bg:'#181626', bg2:'#211f30', bg3:'#2a2840', card:'#23213a',
+  line:'rgba(255,255,255,0.07)', line2:'rgba(255,255,255,0.13)',
+  txt:'#f0eeff', txt2:'rgba(240,238,255,0.6)', txt3:'rgba(240,238,255,0.34)',
+  violet:'#7c5cff', magenta:'#e85cff', green:'#2db87a', red:'#e85b7a', amber:'#e8a030', teal:'#38bcd8' };
+const tint=(h,a)=>h+a;
+const Icon=({d,size=18,color='currentColor',sw=1.8})=>(
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">{Array.isArray(d)?d.map((p,i)=><path key={i} d={p}/>):<path d={d}/>}</svg>
+);
+const P={
+  back:"M19 12H5M12 19l-7-7 7-7",
+  coins:"M12 7.5c4.4 0 8-1.1 8-2.5S16.4 2.5 12 2.5 4 3.6 4 5s3.6 2.5 8 2.5zM4 5v6.5c0 1.4 3.6 2.5 8 2.5s8-1.1 8-2.5V5M4 11.5V18c0 1.4 3.6 2.5 8 2.5s8-1.1 8-2.5v-6.5",
+  chat:"M21 11.5a8.5 8.5 0 01-12.5 7.5L3 21l1.9-5.5A8.5 8.5 0 1121 11.5z",
+  mega:"M3 11v2a1 1 0 001 1h2l5 4V6L6 10H4a1 1 0 00-1 1zM15 8a4 4 0 010 8M18 5a8 8 0 010 14",
+  wrench:"M14.7 6.3a4 4 0 00-5.4 5.4l-6 6 2 2 6-6a4 4 0 005.4-5.4l-2.5 2.5-2-2 2.5-2.5z",
+  cal:"M3 5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2zM3 9h18M8 2v4M16 2v4",
+  box:"M21 8l-9-5-9 5 9 5 9-5zM3 8v8l9 5 9-5V8M12 13v8",
+  trend:"M23 6l-9.5 9.5-5-5L1 18M17 6h6v6",
+  heart:"M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 00-7.8 7.8l1.1 1L12 21l7.7-7.6 1.1-1a5.5 5.5 0 000-7.8z",
+  vote:"M9 12l2 2 4-4M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z",
+  check:"M20 6L9 17l-5-5",
+  bellOff:"M13.7 21a2 2 0 01-3.4 0M18 8a6 6 0 00-9.3-5M3 3l18 18M6 8.7V8M5 19h11l-3-3V8",
+};
+const G=({k,size=18,color})=><Icon d={P[k]} size={size} color={color}/>;
+
+/* tipos de notificación → color + ícono */
+const TYPE={
+  expensa:{c:'amber', k:'coins'}, comunidad:{c:'violet', k:'chat'}, aviso:{c:'red', k:'mega'},
+  reclamo:{c:'amber', k:'wrench'}, reserva:{c:'green', k:'cal'}, paquete:{c:'amber', k:'box'},
+  balance:{c:'teal', k:'trend'}, reaccion:{c:'magenta', k:'heart'}, asamblea:{c:'violet', k:'vote'},
+};
+const HEX={amber:N.amber,violet:N.violet,red:N.red,green:N.green,teal:N.teal,magenta:N.magenta};
+
+const DATA=[
+  ['Hoy', [
+    {type:'expensa', title:'Expensa de junio disponible', body:'$84.300 · vence el 10/07', time:'11:40', unread:true},
+    {type:'aviso', title:'Nuevo aviso: Corte de agua programado', body:'Mañana de 9 a 13h · Administración', time:'09:15', unread:true, urgent:true},
+    {type:'comunidad', title:'Lucía P. comentó tu publicación', body:'"Yo tengo el del gasista, te paso 👍"', time:'08:50', unread:true},
+  ]],
+  ['Ayer', [
+    {type:'reclamo', title:'Tu reclamo cambió de estado', body:'Pérdida de agua 4°B · ahora En curso', time:'18:30', unread:false},
+    {type:'reserva', title:'Reserva confirmada', body:'SUM · Sábado 28 de 14 a 17h', time:'16:02', unread:false},
+    {type:'paquete', title:'Tenés un paquete en portería', body:'Andreani · retiralo con tu código', time:'11:48', unread:false},
+  ]],
+  ['Esta semana', [
+    {type:'asamblea', title:'Convocatoria a asamblea', body:'Jueves 3/07 20h · confirmá tu asistencia', time:'Lun', unread:false},
+    {type:'reaccion', title:'A 8 vecinos les gustó tu aviso', body:'"Busco cochera para alquilar"', time:'Lun', unread:false},
+    {type:'balance', title:'Se publicó el balance de mayo', body:'Ingresos y gastos del mes · ver detalle', time:'Dom', unread:false},
+  ]],
+];
+
+function Row({n,i}){
+  const t=TYPE[n.type], col=HEX[t.c];
+  return (
+    <div style={{display:'flex',gap:13,padding:'13px 16px',position:'relative',background:n.unread?tint(N.violet,'0d'):'transparent',
+      borderRadius:14}}>
+      {n.unread&&<div style={{position:'absolute',left:0,top:14,bottom:14,width:3,borderRadius:3,background:N.violet}}/>}
+      <div style={{width:42,height:42,borderRadius:12,flexShrink:0,background:tint(col,'1e'),border:`1px solid ${tint(col,'33')}`,
+        display:'flex',alignItems:'center',justifyContent:'center',color:col}}>
+        <G k={t.k} size={20}/>
+        {n.urgent&&<span style={{position:'absolute',marginLeft:30,marginTop:-26,width:9,height:9,borderRadius:'50%',background:N.red,border:`2px solid ${N.bg}`}}/>}
+      </div>
+      <div style={{flex:1,minWidth:0,paddingTop:1}}>
+        <div style={{display:'flex',alignItems:'baseline',gap:8}}>
+          <div style={{flex:1,fontSize:13.5,fontWeight:n.unread?700:600,color:N.txt,letterSpacing:-0.2,lineHeight:1.3}}>{n.title}</div>
+          <div style={{fontSize:10.5,color:N.txt3,flexShrink:0}}>{n.time}</div>
+        </div>
+        <div style={{fontSize:12,color:N.txt2,marginTop:3,lineHeight:1.45,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{n.body}</div>
+      </div>
+      {n.unread&&<div style={{width:9,height:9,borderRadius:'50%',background:N.violet,flexShrink:0,alignSelf:'center',boxShadow:`0 0 8px ${tint(N.violet,'88')}`}}/>}
+    </div>
+  );
+}
+
+function NotificacionesApp({insetTop=56,insetBottom=30}){
+  const [tab,setTab]=useState('Todas');
+  const groups = DATA.map(([g,items])=>[g, tab==='Sin leer'?items.filter(x=>x.unread):items]).filter(([,it])=>it.length);
+  const unread = DATA.flatMap(([,it])=>it).filter(x=>x.unread).length;
+  return (
+    <div style={{height:'100%',background:N.bg,display:'flex',flexDirection:'column',position:'relative',overflow:'hidden',color:N.txt,fontFamily:F}}>
+      {/* glow violeta + arco */}
+      <div style={{position:'absolute',top:0,left:0,right:0,height:280,pointerEvents:'none',zIndex:0,
+        background:'radial-gradient(130% 78% at 50% -16%, rgba(124,92,255,0.5) 0%, rgba(124,92,255,0.16) 36%, rgba(24,22,38,0) 70%), radial-gradient(70% 55% at 80% -6%, rgba(232,92,255,0.28) 0%, rgba(232,92,255,0) 55%)'}}/>
+      <div style={{position:'absolute',top:0,left:'8%',right:'8%',height:3,zIndex:1,pointerEvents:'none',borderRadius:3,
+        background:'linear-gradient(90deg, rgba(124,92,255,0) 0%, #b6a3ff 30%, #7c5cff 50%, #b6a3ff 70%, rgba(124,92,255,0) 100%)',
+        boxShadow:'0 0 14px 2px rgba(124,92,255,0.55), 0 0 40px 8px rgba(124,92,255,0.26)'}}/>
+
+      {/* header */}
+      <div style={{flexShrink:0,paddingTop:insetTop,position:'relative',zIndex:2}}>
+        <div style={{display:'flex',alignItems:'center',gap:12,padding:'6px 16px 12px'}}>
+          <div style={{width:40,height:40,borderRadius:12,background:'rgba(255,255,255,0.06)',border:`1px solid ${N.line2}`,display:'flex',alignItems:'center',justifyContent:'center',color:N.txt,cursor:'pointer',flexShrink:0}}><G k="back" size={19}/></div>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontSize:19,fontWeight:700,letterSpacing:-0.4}}>Notificaciones</div>
+            <div style={{fontSize:11.5,color:N.txt2,marginTop:1}}>{unread} sin leer</div>
+          </div>
+          <div style={{display:'flex',alignItems:'center',gap:6,fontSize:12,fontWeight:600,color:N.violet,cursor:'pointer'}}><G k="check" size={16} color={N.violet}/>Marcar leídas</div>
+        </div>
+        {/* tabs */}
+        <div style={{display:'flex',gap:8,padding:'2px 16px 12px'}}>
+          {[['Todas',DATA.flatMap(([,it])=>it).length],['Sin leer',unread]].map(([t,n])=>{const on=t===tab;return(
+            <div key={t} onClick={()=>setTab(t)} style={{display:'flex',alignItems:'center',gap:7,padding:'8px 15px',borderRadius:20,cursor:'pointer',
+              background:on?N.violet:N.bg3, color:on?'#fff':N.txt2, fontSize:12.5, fontWeight:600, transition:'all .15s',
+              boxShadow:on?'0 6px 16px rgba(124,92,255,0.4)':'none'}}>
+              {t}<span style={{fontSize:10.5,fontWeight:700,padding:'1px 7px',borderRadius:10,background:on?'rgba(255,255,255,0.22)':N.bg4||'rgba(255,255,255,0.08)',color:on?'#fff':N.txt3}}>{n}</span>
+            </div>);})}
+        </div>
+      </div>
+
+      {/* lista */}
+      <div className="notif-scroll" style={{flex:1,overflowY:'auto',position:'relative',zIndex:2,padding:'0 8px 20px'}}>
+        {groups.length? groups.map(([g,items])=>(
+          <div key={g} style={{marginBottom:6}}>
+            <div style={{fontSize:10.5,fontWeight:700,letterSpacing:0.8,textTransform:'uppercase',color:N.txt3,padding:'12px 16px 6px'}}>{g}</div>
+            <div style={{display:'flex',flexDirection:'column',gap:2}}>{items.map((n,i)=><Row key={n.title} n={n} i={i}/>)}</div>
+          </div>
+        )) : (
+          <div style={{padding:'80px 30px',textAlign:'center',color:N.txt3}}>
+            <div style={{display:'inline-flex',width:56,height:56,borderRadius:16,background:N.bg2,border:`1px solid ${N.line}`,alignItems:'center',justifyContent:'center',marginBottom:14,color:N.violet}}><G k="check" size={26} color={N.violet}/></div>
+            <div style={{fontSize:14,fontWeight:600,color:N.txt2}}>Estás al día</div>
+            <div style={{fontSize:12,marginTop:4}}>No tenés notificaciones sin leer.</div>
+          </div>
+        )}
+        <div style={{height:insetBottom}}/>
+      </div>
+    </div>
+  );
+}
+
+function Stage(){
+  const [scale,setScale]=React.useState(1);
+  React.useEffect(()=>{
+    const fit=()=>{ const W=402+40, H=874+44; setScale(Math.min(1,window.innerWidth/W,window.innerHeight/H)); };
+    fit(); window.addEventListener('resize',fit); return ()=>window.removeEventListener('resize',fit);
+  },[]);
+  return (
+    <div id="stage">
+      <div style={{transform:`scale(${scale})`,transformOrigin:'center center'}}>
+        {window.IOSDevice
+          ? <window.IOSDevice dark width={402} height={874}><NotificacionesApp insetTop={56} insetBottom={30}/></window.IOSDevice>
+          : <div style={{width:402,height:874,borderRadius:44,overflow:'hidden',border:'10px solid #000'}}><NotificacionesApp/></div>}
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<Stage/>);
+</script>
+</body>
+</html>
